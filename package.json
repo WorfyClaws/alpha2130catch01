@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.mjs",
   "scripts": {
-      "start": "node --experimental-modules index.mjs"
+    "start": "node --experimental-modules index.mjs",
+    "train": "node --experimental-modules training.mjs"
   },
   "repository": {
     "type": "git",
@@ -17,6 +18,11 @@
   },
   "homepage": "https://github.com/apottere/pokecord#readme",
   "dependencies": {
-    "discord.js": "^11.5.1"
+    "@tensorflow-models/mobilenet": "^2.0.2",
+    "@tensorflow/tfjs-node": "^1.2.3",
+    "discord.js": "^11.5.1",
+    "fast-glob": "^3.0.4",
+    "fs-extra": "^8.1.0",
+    "sharp": "^0.22.1"
   }
 }
