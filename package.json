@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node --experimental-modules index.mjs",
     "augment": "node --experimental-modules augment.mjs",
-    "train": "node --experimental-modules training.mjs"
+    "train": "node --experimental-modules training.mjs",
+    "test": "node --experimental-modules test.mjs",
+    "start": "node --experimental-modules index.mjs"
   },
   "repository": {
     "type": "git",
