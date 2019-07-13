@@ -15,6 +15,12 @@ const client = new Discord.Client();
 const alolan = 'Alolan ';
 const j2eChannelId = '598497945666453504';
 const channelId = '599371457771995149';
+const failedPredictions = [
+    'Aegislash',
+    'Frillish',
+    'Tauros',
+    'Sandygast',
+]
 
 const getBufferForImageUrl = async (url) => {
     return new Promise((resolve, reject) => {
@@ -46,7 +52,8 @@ const getPredictionForUrl = async (url) => {
 
 const run = async () => {
     let lastUrl = null;
-    let nextPrediction = null;
+    let nextPredictions = null;
+    let nextPredictionIndex = null;
     const imageNames = await fs.readdir(imageDir);
     await model.init();
     await model.loadModel(modelDir);
@@ -59,11 +66,16 @@ const run = async () => {
     client.on('message', (msg) => {
         if((msg.channel.id === j2eChannelId || msg.channel.id === channelId) && msg.author.username === 'Pokécord') {
             if(msg.content.match(/This is the wrong pok.mon!/)) {
-                if(nextPrediction) {
-                    msg.channel.send(`p!catch ${nextPrediction.toLowerCase()}`);
-                    nextPrediction = null;
+                if(!nextPredictions || nextPredictionIndex >= nextPredictions.length) {
+                    if(lastUrl) {
+                        console.log('Unable to identify: ', lastUrl);
+                    }
+                    nextPredictions = null;
+                    nextPredictionIndex = null;
+                    lastUrl = null;
                 } else {
-                    console.log('Unable to identify: ', lastUrl);
+                    msg.channel.send(`p!catch ${nextPredictions[nextPredictionIndex].toLowerCase()}`);
+                    nextPredictionIndex++;
                 }
             }
 
@@ -73,12 +85,13 @@ const run = async () => {
                 if(embed) {
                     getPredictionForUrl(embed.image.url)
                         .then(prediction => {
+                            nextPredictions = [...failedPredictions];
+                            nextPredictionIndex = 0;
+
                             if(prediction.startsWith(alolan)) {
-                                nextPrediction = prediction.substring(alolan.length + 1, prediction.length);
+                                nextPredictions.unshift(prediction.substring(alolan.length + 1, prediction.length));
                             } else if(imageNames.includes(alolan + prediction)) {
-                                nextPrediction = alolan + prediction;
-                            } else {
-                                nextPrediction = 'Sandygast';
+                                nextPredictions.unshift(alolan + prediction);
                             }
 
                             lastUrl = embed.image.url;
