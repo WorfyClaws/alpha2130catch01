@@ -5,10 +5,10 @@
   "main": "index.mjs",
   "scripts": {
     "start": "node --experimental-modules index.mjs",
+    "scrape": "node --experimental-modules scrape.mjs",
     "augment": "node --experimental-modules augment.mjs",
     "train": "node --experimental-modules training.mjs",
-    "test": "node --experimental-modules test.mjs",
-    "start": "node --experimental-modules index.mjs"
+    "test": "node --experimental-modules test.mjs"
   },
   "repository": {
     "type": "git",
@@ -23,9 +23,11 @@
   "dependencies": {
     "@tensorflow-models/mobilenet": "^2.0.2",
     "@tensorflow/tfjs-node": "^1.2.3",
+    "cheerio": "^1.0.0-rc.3",
     "discord.js": "^11.5.1",
     "fast-glob": "^3.0.4",
     "fs-extra": "^8.1.0",
+    "request": "^2.88.0",
     "sharp": "^0.22.1"
   }
 }
