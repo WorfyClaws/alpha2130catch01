@@ -1,0 +1,22 @@
+{
+  "name": "pokecord",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.mjs",
+  "scripts": {
+      "start": "node --experimental-modules index.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/apottere/pokecord.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/apottere/pokecord/issues"
+  },
+  "homepage": "https://github.com/apottere/pokecord#readme",
+  "dependencies": {
+    "discord.js": "^11.5.1"
+  }
+}
