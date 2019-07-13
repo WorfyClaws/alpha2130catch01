@@ -2,13 +2,13 @@
   "name": "pokecord",
   "version": "1.0.0",
   "description": "",
-  "main": "index.mjs",
+  "main": "src/index.mjs",
   "scripts": {
-    "start": "node --experimental-modules index.mjs",
-    "scrape": "node --experimental-modules scrape.mjs",
-    "augment": "node --experimental-modules augment.mjs",
-    "train": "node --experimental-modules training.mjs",
-    "test": "node --experimental-modules test.mjs"
+    "start": "node --experimental-modules src/index.mjs",
+    "scrape": "node --experimental-modules src/scrape.mjs",
+    "augment": "node --experimental-modules src/augment.mjs",
+    "train": "node --experimental-modules src/training.mjs",
+    "test": "node --experimental-modules src/test.mjs"
   },
   "repository": {
     "type": "git",

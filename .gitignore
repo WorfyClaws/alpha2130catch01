@@ -1,4 +1,4 @@
-/token.mjs
+/src/token.mjs
 /node_modules/
-/model/
-/images/
+/data/model/
+/data/images/
