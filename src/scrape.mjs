@@ -5,6 +5,11 @@ import fs from 'fs-extra';
 
 import { imageDir } from './dirs';
 
+const start = parseInt(process.argv[2] || '0', 10);
+if(start !== 0) {
+    console.log(`Starting at: #${start}`);
+}
+
 const baseurl = 'https://bulbapedia.bulbagarden.net';
 
 const rq = async (url) => new Promise((resolve, reject) => {
@@ -24,7 +29,7 @@ const rq = async (url) => new Promise((resolve, reject) => {
 const scrapePokemonImage = async (number, url) => {
     const $ = await rq(baseurl + url);
     const name = $('table.roundy td big big b').text();
-    const srcset = $(`table.roundy a[title='${name}'] img`).attr('srcset');
+    const srcset = $(`table.roundy a[title] img`).attr('srcset');
     const images = srcset.split(',')
         .map(e => e.trim())
         .map(e => e.split(' ')[0]);
@@ -58,6 +63,10 @@ const scrape = async () => {
         const number = $(children[1]).text().trim();
 
         if(!number.startsWith('#') || number.startsWith('#?')) {
+            return;
+        }
+
+        if(start !== 0 && parseInt(number.substring(1, number.length), 10) < start) {
             return;
         }
 
