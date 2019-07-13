@@ -10,7 +10,7 @@ const model = new Model();
 const trainingParams = {
     batchSizeFraction: 0.2,
     denseUnits: 100,
-    epochs: 100,
+    epochs: 200,
     learningRate: 0.0001,
     trainStatus: () => {}
 }

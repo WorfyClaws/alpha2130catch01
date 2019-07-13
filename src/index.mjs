@@ -1,16 +1,18 @@
 import tf from '@tensorflow/tfjs-node';
 import Discord from 'discord.js';
 import request from 'request';
+import fs from 'fs-extra';
 
 import { token } from './token';
 import { Data } from './data';
 import { Model } from './model';
-import { modelDir } from './dirs';
+import { imageDir, modelDir } from './dirs';
 
 const data = new Data();
 const model = new Model();
 const client = new Discord.Client();
 
+const alolan = 'Alolan ';
 const j2eChannelId = '598497945666453504';
 const channelId = '599371457771995149';
 
@@ -43,6 +45,9 @@ const getPredictionForUrl = async (url) => {
 };
 
 const run = async () => {
+    let lastUrl = null;
+    let nextPrediction = null;
+    const imageNames = await fs.readdir(imageDir);
     await model.init();
     await model.loadModel(modelDir);
 
@@ -53,12 +58,30 @@ const run = async () => {
 
     client.on('message', (msg) => {
         if((msg.channel.id === j2eChannelId || msg.channel.id === channelId) && msg.author.username === 'Pokécord') {
+            if(msg.content.match(/This is the wrong pok.mon!/)) {
+                if(nextPrediction) {
+                    msg.channel.send(`p!catch ${nextPrediction.toLowerCase()}`);
+                    nextPrediction = null;
+                } else {
+                    console.log('Unable to identify: ', lastUrl);
+                }
+            }
+
             const embeds = msg.embeds;
             if(embeds && embeds.length > 0) {
                 const embed = embeds.find((e) => e.title.match(/A wild pok.mon has appeared!/));
                 if(embed) {
                     getPredictionForUrl(embed.image.url)
                         .then(prediction => {
+                            if(prediction.startsWith(alolan)) {
+                                nextPrediction = prediction.substring(alolan.length + 1, prediction.length);
+                            } else if(imageNames.includes(alolan + prediction)) {
+                                nextPrediction = alolan + prediction;
+                            } else {
+                                nextPrediction = 'Sandygast';
+                            }
+
+                            lastUrl = embed.image.url;
                             msg.channel.send(`p!catch ${prediction.toLowerCase()}`);
                         });
                 }
@@ -67,7 +90,6 @@ const run = async () => {
     });
 
     client.login(token);
-
 };
 
 run();
