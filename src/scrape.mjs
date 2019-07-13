@@ -49,7 +49,10 @@ const scrapePokemonImage = async (number, url) => {
 
 
 const scrape = async () => {
-    await fs.remove(imageDir);
+    if(start === 0) {
+        await fs.remove(imageDir);
+    }
+
     const $ = await rq(`${baseurl}/wiki/List_of_Pok%C3%A9mon_by_National_Pok%C3%A9dex_number`);
     const results = [];
 
