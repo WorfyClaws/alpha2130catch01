@@ -50,6 +50,7 @@ const scrapePokemonImage = async (number, url) => {
 
 const scrape = async () => {
     if(start === 0) {
+        console.log("Cleaning directory...");
         await fs.remove(imageDir);
     }
 
