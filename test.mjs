@@ -20,10 +20,14 @@ async function test() {
             label: e.substring(0, e.length - 4)
         }));
 
-    Promise.all(images.map(async image => {
+    let correct = 0;
+    let mislabeled = 0;
+
+    await Promise.all(images.map(async image => {
         const filename = image.filename;
         const label = image.label;
         const imageTensor = await data.fileToTensor(path.join(testsDir, filename));
+
         tf.tidy(() => {
             const prediction = model.getPrediction(imageTensor);
             const result = {
@@ -35,12 +39,17 @@ async function test() {
             };
 
             if (prediction.label === label) {
-                console.log("correct: ", result);
+                console.log('correct: ', result);
+                correct++;
             } else {
-                console.log("mislabeled: ", result);
+                console.log('mislabeled: ', result);
+                mislabeled++;
             }
         });
     }));
+
+    console.log('--------------------------------------------------------------------------------');
+    console.log(`correct: ${correct}, mislabeled: ${mislabeled}, accuracy: ${(correct / (correct + mislabeled + 0.0) * 100)}%`)
 }
 
 test();
