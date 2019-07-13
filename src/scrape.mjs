@@ -26,18 +26,18 @@ const rq = async (url) => new Promise((resolve, reject) => {
     });
 });
 
-const scrapePokemonImage = async (number, url) => {
-    const $ = await rq(baseurl + url);
-    const name = $('table.roundy td big big b').text();
-    const srcset = $(`table.roundy a[title] img`).attr('srcset');
-    const images = srcset.split(',')
+const getImageFromSrcSet = (srcSet) => {
+    const images = srcSet.split(',')
         .map(e => e.trim())
         .map(e => e.split(' ')[0]);
 
-    const image = images[images.length - 1];
-    const body = await rq({url: `https:${image}`, encoding: null});
+    return images[images.length - 1];
+};
 
-    const imageParts = image.split('.');
+const downloadAndWritePokemon = async (number, name, url) => {
+    const body = await rq({url: `https:${url}`, encoding: null});
+
+    const imageParts = url.split('.');
     const extension = imageParts[imageParts.length - 1];
     const dir = path.join(imageDir, name);
     const file = path.join(dir, `${name}.${extension}`);
@@ -45,6 +45,28 @@ const scrapePokemonImage = async (number, url) => {
     await fs.outputFile(file, body);
 
     console.log(`Wrote pokemon ${number}: `, file);
+};
+
+const scrapePokemonImage = async (number, url) => {
+    const $ = await rq(baseurl + url);
+    const name = $('table.roundy td big big b').text();
+    const alolanName = "Alolan " + name
+
+    let srcSet = $(`table.roundy a[title='${name}'] img`).attr('srcset');
+    const alolanSrcSet = $(`table.roundy a[title='${alolanName}'] img`).attr('srcset');
+
+    if(!srcSet && (name === 'Burmy' || name === 'Wormadam')) {
+        srcSet = $(`table.roundy a[title='Plant Cloak'] img`).attr('srcset');
+    }
+
+    if(!srcSet) {
+        throw new Error(`Unable to get image for pokemon: ${name}`);
+    }
+    
+    await downloadAndWritePokemon(number, name, getImageFromSrcSet(srcSet));
+    if(alolanSrcSet) {
+        await downloadAndWritePokemon(number, alolanName, getImageFromSrcSet(alolanSrcSet));
+    }
 };
 
 
@@ -55,7 +77,7 @@ const scrape = async () => {
     }
 
     const $ = await rq(`${baseurl}/wiki/List_of_Pok%C3%A9mon_by_National_Pok%C3%A9dex_number`);
-    const results = [];
+    const results = {};
 
     $('table tr').each(async (i, tr) => {
         const children = $(tr).children('td');
@@ -76,14 +98,13 @@ const scrape = async () => {
 
         const url = $($(children[3]).children('a')[0]).attr('href');
 
-        results.push({
-            number,
-            url,
-        })
+        if(!results[number]) {
+            results[number] = url;
+        }
     });
 
-    for(let result of results) {
-        await scrapePokemonImage(result.number, result.url);
+    for(let [number, url] of Object.entries(results)) {
+        await scrapePokemonImage(number, url);
     }
 };
 
