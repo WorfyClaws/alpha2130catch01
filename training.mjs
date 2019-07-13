@@ -1,3 +1,5 @@
+import fs from 'fs-extra';
+
 import { Data } from './data';
 import { Model } from './model';
 import { imageDir, modelDir } from './dirs';
@@ -14,6 +16,8 @@ const trainingParams = {
 }
 
 export const train = async () => {
+    await fs.remove(modelDir);
+
     console.log('Loading images...');
     await data.loadLabelsAndImages(imageDir);
 
