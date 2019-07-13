@@ -11,6 +11,19 @@ if(start !== 0) {
 }
 
 const baseurl = 'https://bulbapedia.bulbagarden.net';
+const alternateNames = {
+    Burmy: 'Plant Cloak',
+    Wormadam: 'Plant Cloak',
+    Darmanitan: 'Standard Mode',
+    Deerling: 'Spring Form',
+    Sawsbuck: 'Spring Form',
+    'Flabébé': 'Red Flower',
+    Floette: 'Red Flower',
+    Florges: 'Red Flower',
+    Xerneas: 'Active Mode',
+    Oricorio: 'Baile Style',
+    Lycanroc: 'Midday Form',
+}
 
 const rq = async (url) => new Promise((resolve, reject) => {
     request(url, (error, response, html) => {
@@ -55,8 +68,8 @@ const scrapePokemonImage = async (number, url) => {
     let srcSet = $(`table.roundy a[title='${name}'] img`).attr('srcset');
     const alolanSrcSet = $(`table.roundy a[title='${alolanName}'] img`).attr('srcset');
 
-    if(!srcSet && (name === 'Burmy' || name === 'Wormadam')) {
-        srcSet = $(`table.roundy a[title='Plant Cloak'] img`).attr('srcset');
+    if(!srcSet && alternateNames[name]) {
+        srcSet = $(`table.roundy a[title='${alternateNames[name]}'] img`).attr('srcset');
     }
 
     if(!srcSet) {
