@@ -1,16 +1,16 @@
 import { Data } from './data';
 import { Model } from './model';
+import { imageDir, modelDir } from './dirs';
 
 const data = new Data();
 const model = new Model();
 
-const imageDir = "data";
-const modelDir = "model";
 const trainingParams = {
-    batch_size_fraction: 0.2,
-    dense_units: 100,
+    batchSizeFraction: 0.2,
+    denseUnits: 100,
     epochs: 50,
-    learning_rate: 0.0001
+    learningRate: 0.0001,
+    trainStatus: () => {}
 }
 
 export const train = async () => {

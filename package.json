@@ -5,6 +5,7 @@
   "main": "index.mjs",
   "scripts": {
     "start": "node --experimental-modules index.mjs",
+    "augment": "node --experimental-modules augment.mjs",
     "train": "node --experimental-modules training.mjs"
   },
   "repository": {

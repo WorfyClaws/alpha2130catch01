@@ -6,6 +6,7 @@ import path from 'path';
 
 async function fileToTensor(filename) {
     const { data, info } = await sharp(filename)
+        .flatten()
         .raw()
         .toBuffer({ resolveWithObject: true });
 
@@ -17,7 +18,12 @@ async function getDirectories(imagesDirectory) {
 }
 
 async function getImagesInDirectory(directory) {
-    return await fg([path.join(directory, "*.jpg")]);
+    return await fg([
+        path.join(directory, "*.png"),
+        path.join(directory, "**/*.png"),
+        path.join(directory, "*.jpg"),
+        path.join(directory, "**/*.jpg")
+    ]);
 }
 
 const imageToTensor = (pixelData, imageInfo) => {
