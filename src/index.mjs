@@ -82,8 +82,13 @@ const run = async () => {
                     nextPredictionIndex++;
                 }
             }
+
             if(msg.content.match(/Congratulations .+! You caught a .+/)) {
                 msg.acknowledge();
+
+                if(msg.content.match(/.+ Added to Pokédex/)) {
+                    msg.react('❤️');
+                }
             }
 
             const embeds = msg.embeds;
