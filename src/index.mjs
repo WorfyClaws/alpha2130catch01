@@ -82,6 +82,9 @@ const run = async () => {
                     nextPredictionIndex++;
                 }
             }
+            if(msg.content.match(/Congratulations .+! You caught a .+/)) {
+                msg.acknowledge();
+            }
 
             const embeds = msg.embeds;
             if(embeds && embeds.length > 0) {
