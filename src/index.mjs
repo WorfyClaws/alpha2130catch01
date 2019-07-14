@@ -19,6 +19,7 @@ const failedPredictions = [
     'Aegislash',
     'Frillish',
     'Tauros',
+    'Minior',
     'Sandygast',
 ]
 
@@ -64,7 +65,7 @@ const run = async () => {
     });
 
     client.on('message', (msg) => {
-        if((msg.channel.id === j2eChannelId || msg.channel.id === channelId) && msg.author.username === 'Pokécord') {
+        if((/*msg.channel.id === j2eChannelId ||*/ msg.channel.id === channelId) && msg.author.username === 'Pokécord') {
             if(msg.content.match(/This is the wrong pok.mon!/)) {
                 if(!nextPredictions || nextPredictionIndex >= nextPredictions.length) {
                     if(lastUrl) {
