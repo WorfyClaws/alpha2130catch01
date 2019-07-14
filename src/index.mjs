@@ -20,6 +20,7 @@ const failedPredictions = [
     'Frillish',
     'Tauros',
     'Minior',
+    'Togedemaru',
     'Sandygast',
 ]
 
