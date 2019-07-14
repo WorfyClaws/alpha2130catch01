@@ -20,12 +20,13 @@ const spawnChannelId = '599941743491678230';
 const failedPredictions = [
     'Aegislash',
     'Frillish',
-    'Tauros',
+    'Gothitelle',
+    'Gurdurr',
     'Minior',
+    'Sandygast',
+    'Tauros',
     'Togedemaru',
     'Unfezant',
-    'Gurdurr',
-    'Sandygast',
 ]
 
 const getBufferForImageUrl = async (url) => {
