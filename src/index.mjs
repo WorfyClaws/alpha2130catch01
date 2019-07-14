@@ -12,6 +12,7 @@ const data = new Data();
 const model = new Model();
 const client = new Discord.Client();
 
+let counter = 0;
 const alolan = 'Alolan ';
 const j2eChannelId = '598497945666453504';
 const spamChannelId = '599371457771995149';
@@ -23,6 +24,7 @@ const failedPredictions = [
     'Minior',
     'Togedemaru',
     'Unfezant',
+    'Gurdurr',
     'Sandygast',
 ]
 
@@ -64,7 +66,7 @@ const run = async () => {
 
     client.on('ready', () => {
         console.log(`Logged in as ${client.user.tag}!`);
-        client.setInterval(() => { client.channels.get(spamChannelId).send('a'); }, 2000);
+        client.setInterval(() => { client.channels.get(spamChannelId).send(counter++); }, 2000);
     });
 
     client.on('message', (msg) => {
@@ -78,8 +80,10 @@ const run = async () => {
                     nextPredictionIndex = null;
                     lastUrl = null;
                 } else {
-                    msg.channel.send(`p!catch ${nextPredictions[nextPredictionIndex].toLowerCase()}`);
+                    const index = nextPredictionIndex;
                     nextPredictionIndex++;
+                    
+                    client.setTimeout(() => msg.channel.send(`p!catch ${nextPredictions[index].toLowerCase()}`), 1000);
                 }
             }
 
@@ -87,7 +91,7 @@ const run = async () => {
                 msg.acknowledge();
 
                 if(msg.content.match(/.+ Added to Pokédex/)) {
-                    msg.react('❤️');
+                    msg.react('600011094341189662');
                 }
             }
 
