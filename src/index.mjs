@@ -14,13 +14,15 @@ const client = new Discord.Client();
 
 const alolan = 'Alolan ';
 const j2eChannelId = '598497945666453504';
-const channelId = '599371457771995149';
+const spamChannelId = '599371457771995149';
+const spawnChannelId = '599941743491678230';
 const failedPredictions = [
     'Aegislash',
     'Frillish',
     'Tauros',
     'Minior',
     'Togedemaru',
+    'Unfezant',
     'Sandygast',
 ]
 
@@ -62,11 +64,11 @@ const run = async () => {
 
     client.on('ready', () => {
         console.log(`Logged in as ${client.user.tag}!`);
-        client.setInterval(() => { client.channels.get(channelId).send('a'); }, 2000);
+        client.setInterval(() => { client.channels.get(spamChannelId).send('a'); }, 2000);
     });
 
     client.on('message', (msg) => {
-        if((/*msg.channel.id === j2eChannelId ||*/ msg.channel.id === channelId) && msg.author.username === 'Pokécord') {
+        if((/*msg.channel.id === j2eChannelId ||*/ msg.channel.id === spawnChannelId) && msg.author.username === 'Pokécord') {
             if(msg.content.match(/This is the wrong pok.mon!/)) {
                 if(!nextPredictions || nextPredictionIndex >= nextPredictions.length) {
                     if(lastUrl) {
