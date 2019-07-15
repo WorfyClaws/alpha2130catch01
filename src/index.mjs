@@ -17,6 +17,7 @@ const alolan = 'Alolan ';
 const j2eChannelId = '598497945666453504';
 const spamChannelId = '599371457771995149';
 const spawnChannelId = '599941743491678230';
+const failedChannelId = '600133329638916116';
 const failedPredictions = [
     'Aegislash',
     'Frillish',
@@ -76,6 +77,7 @@ const run = async () => {
                 if(!nextPredictions || nextPredictionIndex >= nextPredictions.length) {
                     if(lastUrl) {
                         console.log('Unable to identify: ', lastUrl);
+                        client.channels.get(failedChannelId).send(lastUrl);
                     }
                     nextPredictions = null;
                     nextPredictionIndex = null;
