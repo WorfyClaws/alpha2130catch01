@@ -3,7 +3,7 @@ import cheerio from 'cheerio';
 import path from 'path';
 import fs from 'fs-extra';
 
-import { imageDir } from './dirs';
+import { bulbapediaImageDir } from './constants';
 
 const start = parseInt(process.argv[2] || '0', 10);
 if(start !== 0) {
@@ -23,7 +23,7 @@ const alternateNames = {
     Xerneas: 'Active Mode',
     Oricorio: 'Baile Style',
     Lycanroc: 'Midday Form',
-}
+};
 
 const rq = async (url) => new Promise((resolve, reject) => {
     request(url, (error, response, html) => {
@@ -52,8 +52,8 @@ const downloadAndWritePokemon = async (number, name, url) => {
 
     const imageParts = url.split('.');
     const extension = imageParts[imageParts.length - 1];
-    const dir = path.join(imageDir, name);
-    const file = path.join(dir, `${name}.${extension}`);
+    const dir = path.join(bulbapediaImageDir, name);
+    const file = path.join(dir, `bulbapedia.${extension}`);
     await fs.ensureDir(dir);
     await fs.outputFile(file, body);
 
@@ -63,7 +63,7 @@ const downloadAndWritePokemon = async (number, name, url) => {
 const scrapePokemonImage = async (number, url) => {
     const $ = await rq(baseurl + url);
     const name = $('table.roundy td big big b').text();
-    const alolanName = "Alolan " + name
+    const alolanName = "Alolan " + name;
 
     let srcSet = $(`table.roundy a[title='${name}'] img`).attr('srcset');
     const alolanSrcSet = $(`table.roundy a[title='${alolanName}'] img`).attr('srcset');
@@ -75,7 +75,7 @@ const scrapePokemonImage = async (number, url) => {
     if(!srcSet) {
         throw new Error(`Unable to get image for pokemon: ${name}`);
     }
-    
+
     await downloadAndWritePokemon(number, name, getImageFromSrcSet(srcSet));
     if(alolanSrcSet) {
         await downloadAndWritePokemon(number, alolanName, getImageFromSrcSet(alolanSrcSet));
@@ -86,8 +86,9 @@ const scrapePokemonImage = async (number, url) => {
 const scrape = async () => {
     if(start === 0) {
         console.log("Cleaning directory...");
-        await fs.remove(imageDir);
+        await fs.remove(bulbapediaImageDir);
     }
+    await fs.ensureDir(bulbapediaImageDir);
 
     const $ = await rq(`${baseurl}/wiki/List_of_Pok%C3%A9mon_by_National_Pok%C3%A9dex_number`);
     const results = {};

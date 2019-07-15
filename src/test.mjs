@@ -2,23 +2,29 @@ import tf from '@tensorflow/tfjs-node';
 import path from 'path';
 import fs from 'fs-extra';
 
-import { Data } from './data';
+import { fileToTensor } from './data';
 import { Model } from './model';
-import { modelDir, testsDir } from './dirs';
+import { modelDir, pokecordImageDir } from './constants';
 
-const data = new Data();
 const model = new Model();
 
 async function test() {
     await model.init();
     await model.loadModel(modelDir);
 
-    const directoryContents = await fs.readdir(testsDir);
-    const images = directoryContents.filter(e => e.endsWith('.png'))
-        .map(e => ({
-            filename: e,
-            label: e.substring(0, e.length - 4)
-        }));
+    const directories = await fs.readdir(pokecordImageDir);
+    const images = [];
+
+    for(let pokemon of directories) {
+        const directory = path.join(pokecordImageDir, pokemon);
+        const directoryContents = await fs.readdir(directory);
+
+        directoryContents.filter(e => e.endsWith('.png') || e.endsWith('.jpg'))
+            .forEach(e => images.push({
+                label: pokemon,
+                filename: path.join(directory, e),
+            }));
+    }
 
     let correct = 0;
     let mislabeled = 0;
@@ -26,7 +32,7 @@ async function test() {
     await Promise.all(images.map(async image => {
         const filename = image.filename;
         const label = image.label;
-        const imageTensor = await data.fileToTensor(path.join(testsDir, filename));
+        const imageTensor = await fileToTensor(filename);
 
         tf.tidy(() => {
             const prediction = model.getPrediction(imageTensor);

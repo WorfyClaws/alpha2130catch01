@@ -2,7 +2,7 @@ import fs from 'fs-extra';
 
 import { Data } from './data';
 import { Model } from './model';
-import { imageDir, modelDir } from './dirs';
+import { trainingImageDir, modelDir } from './constants';
 
 const data = new Data();
 const model = new Model();
@@ -13,13 +13,13 @@ const trainingParams = {
     epochs: 200,
     learningRate: 0.0001,
     trainStatus: () => {}
-}
+};
 
 export const train = async () => {
     await fs.remove(modelDir);
 
     console.log('Loading images...');
-    await data.loadLabelsAndImages(imageDir);
+    await data.loadLabelsAndImages(trainingImageDir);
 
     console.log('Loading model...');
     await model.init();
@@ -37,7 +37,7 @@ export const train = async () => {
 
     console.log(model.model.summary());
 
-    model.saveModel(modelDir);
-}
+    await model.saveModel(modelDir);
+};
 
 train();

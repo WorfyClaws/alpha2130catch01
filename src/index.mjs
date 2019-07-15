@@ -1,39 +1,25 @@
 import tf from '@tensorflow/tfjs-node';
 import Discord from 'discord.js';
 import request from 'request';
-import fs from 'fs-extra';
 
 import { token } from './token';
-import { Data } from './data';
+import { fileToTensor } from './data';
 import { Model } from './model';
-import { imageDir, modelDir } from './dirs';
+import { modelDir } from './constants';
 
-const data = new Data();
 const model = new Model();
 const client = new Discord.Client();
 
 let counter = 0;
-const alolan = 'Alolan ';
 const j2eChannelId = '598497945666453504';
 const spamChannelId = '599371457771995149';
 const spawnChannelId = '599941743491678230';
 const failedChannelId = '600133329638916116';
-const failedPredictions = [
-    'Aegislash',
-    'Frillish',
-    'Gothitelle',
-    'Gurdurr',
-    'Minior',
-    'Sandygast',
-    'Tauros',
-    'Togedemaru',
-    'Unfezant',
-]
 
 const getBufferForImageUrl = async (url) => {
     return new Promise((resolve, reject) => {
         request({url: url, encoding: null}, (error, response, data) => {
-            if(error != null || response.statusCode != 200) {
+            if(error != null || response.statusCode !== 200) {
                 reject(new Error(`Error getting page from bulbapedia (${response.statusCode}, ${error}) for URL: ${url}`));
             } else {
                 resolve(data);
@@ -43,7 +29,7 @@ const getBufferForImageUrl = async (url) => {
 };
 
 const predict = async (tensor) => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         tf.tidy(() => {
             resolve(model.getPrediction(tensor));
         });
@@ -52,7 +38,7 @@ const predict = async (tensor) => {
 
 const getPredictionForUrl = async (url) => {
     const buffer = await getBufferForImageUrl(url);
-    const tensor = await data.fileToTensor(buffer);
+    const tensor = await fileToTensor(buffer);
     const prediction = await predict(tensor);
 
     return prediction.label;
@@ -60,9 +46,6 @@ const getPredictionForUrl = async (url) => {
 
 const run = async () => {
     let lastUrl = null;
-    let nextPredictions = null;
-    let nextPredictionIndex = null;
-    const imageNames = await fs.readdir(imageDir);
     await model.init();
     await model.loadModel(modelDir);
 
@@ -74,20 +57,11 @@ const run = async () => {
     client.on('message', (msg) => {
         if((/*msg.channel.id === j2eChannelId ||*/ msg.channel.id === spawnChannelId) && msg.author.username === 'Pokécord') {
             if(msg.content.match(/This is the wrong pok.mon!/)) {
-                if(!nextPredictions || nextPredictionIndex >= nextPredictions.length) {
                     if(lastUrl) {
                         console.log('Unable to identify: ', lastUrl);
                         client.channels.get(failedChannelId).send(lastUrl);
                     }
-                    nextPredictions = null;
-                    nextPredictionIndex = null;
                     lastUrl = null;
-                } else {
-                    const index = nextPredictionIndex;
-                    nextPredictionIndex++;
-                    
-                    client.setTimeout(() => msg.channel.send(`p!catch ${nextPredictions[index].toLowerCase()}`), 1000);
-                }
             }
 
             if(msg.content.match(/Congratulations .+! You caught a .+/)) {
@@ -102,18 +76,10 @@ const run = async () => {
             if(embeds && embeds.length > 0) {
                 const embed = embeds.find((e) => e.title.match(/A wild pok.mon has appeared!/));
                 if(embed) {
-                    getPredictionForUrl(embed.image.url)
+                    const url = embed.image.url;
+                    getPredictionForUrl(url)
                         .then(prediction => {
-                            nextPredictions = [...failedPredictions];
-                            nextPredictionIndex = 0;
-
-                            if(prediction.startsWith(alolan)) {
-                                nextPredictions.unshift(prediction.substring(alolan.length + 1, prediction.length));
-                            } else if(imageNames.includes(alolan + prediction)) {
-                                nextPredictions.unshift(alolan + prediction);
-                            }
-
-                            lastUrl = embed.image.url;
+                            lastUrl = url;
                             msg.channel.send(`p!catch ${prediction.toLowerCase()}`);
                         });
                 }
@@ -121,7 +87,7 @@ const run = async () => {
         }
     });
 
-    client.login(token);
+    await client.login(token);
 };
 
 run();

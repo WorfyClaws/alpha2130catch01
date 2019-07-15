@@ -4,27 +4,23 @@ import fse from 'fs-extra';
 import sharp from 'sharp';
 import path from 'path';
 
-async function fileToTensor(filename) {
+export const fileToTensor = async (filename) => {
     const { data, info } = await sharp(filename)
         .flatten()
         .raw()
         .toBuffer({ resolveWithObject: true });
 
     return imageToTensor(data, info);
-}
+};
 
-async function getDirectories(imagesDirectory) {
-    return await fse.readdir(imagesDirectory);
-}
+const getDirectories = async (imagesDirectory) => fse.readdir(imagesDirectory);
 
-async function getImagesInDirectory(directory) {
-    return await fg([
-        path.join(directory, "*.png"),
-        path.join(directory, "**/*.png"),
-        path.join(directory, "*.jpg"),
-        path.join(directory, "**/*.jpg")
-    ]);
-}
+const getImagesInDirectory = async (directory) => fg([
+    path.join(directory, "*.png"),
+    path.join(directory, "**/*.png"),
+    path.join(directory, "*.jpg"),
+    path.join(directory, "**/*.jpg")
+]);
 
 const imageToTensor = (pixelData, imageInfo) => {
     const outShape = [1, imageInfo.height, imageInfo.width, imageInfo.channels];
@@ -39,9 +35,9 @@ const imageToTensor = (pixelData, imageInfo) => {
     );
 };
 
-async function readImagesDirectory(imagesDirectory) {
+const readImagesDirectory = async (imagesDirectory) => {
     const directories = await getDirectories(imagesDirectory);
-    const result = await Promise.all(
+    return Promise.all(
         directories.map(async directory => {
             const p = path.join(imagesDirectory, directory);
             return getImagesInDirectory(p).then(images => {
@@ -49,26 +45,12 @@ async function readImagesDirectory(imagesDirectory) {
             });
         })
     );
-
-    return result;
-}
+};
 
 export class Data {
     constructor() {
         this.dataset = null;
         this.labelsAndImages = null;
-    }
-
-    getEmbeddingsForImage(index) {
-        return this.dataset.images.gather([index]);
-    }
-
-    fileToTensor(filename) {
-        return fileToTensor(filename);
-    }
-
-    imageToTensor(image, numChannels) {
-        return imageToTensor(image, numChannels);
     }
 
     labelIndex(label) {

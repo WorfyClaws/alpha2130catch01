@@ -1,4 +1,7 @@
+.idea/
+node_modules/
+
 /src/token.mjs
-/node_modules/
+/data/bulbapedia/
+/data/training/
 /data/model/
-/data/images/
