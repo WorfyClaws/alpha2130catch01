@@ -1,11 +1,13 @@
 import tf from '@tensorflow/tfjs-node';
 import Discord from 'discord.js';
 import request from 'request';
+import path from 'path';
+import fs from 'fs-extra';
 
 import { token } from './token';
 import { fileToTensor } from './data';
 import { Model } from './model';
-import { modelDir } from './constants';
+import { modelDir, pokecordImageDir } from './constants';
 
 const model = new Model();
 const client = new Discord.Client();
@@ -15,6 +17,16 @@ const j2eChannelId = '598497945666453504';
 const spamChannelId = '599371457771995149';
 const spawnChannelId = '599941743491678230';
 const failedChannelId = '600133329638916116';
+
+const attemptDownload = async (name, url) => {
+    const directory = path.join(pokecordImageDir, name);
+    const filename = path.join(directory, 'pokecord-auto.png');
+
+    if(!await fs.exists(filename)) {
+        await fs.ensureDir(directory);
+        await fs.writeFile(filename, await getBufferForImageUrl(url));
+    }
+};
 
 const getBufferForImageUrl = async (url) => {
     return new Promise((resolve, reject) => {
@@ -45,31 +57,38 @@ const getPredictionForUrl = async (url) => {
 };
 
 const run = async () => {
-    let lastUrl = null;
+    let lastPrediction = null;
     await model.init();
     await model.loadModel(modelDir);
 
     client.on('ready', () => {
         console.log(`Logged in as ${client.user.tag}!`);
-        client.setInterval(() => { client.channels.get(spamChannelId).send(counter++); }, 2000);
+        client.setInterval(async () => { await client.channels.get(spamChannelId).send(counter++); }, 2000);
     });
 
-    client.on('message', (msg) => {
+    client.on('message', async (msg) => {
         if((/*msg.channel.id === j2eChannelId ||*/ msg.channel.id === spawnChannelId) && msg.author.username === 'Pokécord') {
             if(msg.content.match(/This is the wrong pok.mon!/)) {
-                    if(lastUrl) {
-                        console.log('Unable to identify: ', lastUrl);
-                        client.channels.get(failedChannelId).send(lastUrl);
-                    }
-                    lastUrl = null;
+                const prediction = lastPrediction;
+                lastPrediction = null;
+
+                if(prediction) {
+                    console.log('Unable to identify: ', prediction.url);
+                    await client.channels.get(failedChannelId).send(prediction.url);
+                }
             }
 
             if(msg.content.match(/Congratulations .+! You caught a .+/)) {
-                msg.acknowledge();
+                const prediction = lastPrediction;
+                lastPrediction = null;
+
+                await msg.acknowledge();
 
                 if(msg.content.match(/.+ Added to Pokédex/)) {
-                    msg.react('600011094341189662');
+                    await msg.react('600011094341189662');
                 }
+
+                await attemptDownload(prediction.name, prediction.url);
             }
 
             const embeds = msg.embeds;
@@ -77,11 +96,13 @@ const run = async () => {
                 const embed = embeds.find((e) => e.title.match(/A wild pok.mon has appeared!/));
                 if(embed) {
                     const url = embed.image.url;
-                    getPredictionForUrl(url)
-                        .then(prediction => {
-                            lastUrl = url;
-                            msg.channel.send(`p!catch ${prediction.toLowerCase()}`);
-                        });
+                    const prediction = await getPredictionForUrl(url);
+                    lastPrediction = {
+                        url,
+                        name: prediction
+                    };
+
+                    await msg.channel.send(`p!catch ${prediction.toLowerCase()}`);
                 }
             }
         }
