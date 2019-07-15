@@ -18,13 +18,14 @@ const spamChannelId = '599371457771995149';
 const spawnChannelId = '599941743491678230';
 const failedChannelId = '600133329638916116';
 
-const attemptDownload = async (name, url) => {
+const attemptDownload = async (msg, name, url) => {
     const directory = path.join(pokecordImageDir, name);
     const filename = path.join(directory, 'pokecord-auto.png');
 
     if(!await fs.exists(filename)) {
         await fs.ensureDir(directory);
         await fs.writeFile(filename, await getBufferForImageUrl(url));
+        await msg.react('💾');
     }
 };
 
@@ -88,7 +89,7 @@ const run = async () => {
                     await msg.react('600011094341189662');
                 }
 
-                await attemptDownload(prediction.name, prediction.url);
+                await attemptDownload(msg, prediction.name, prediction.url);
             }
 
             const embeds = msg.embeds;
