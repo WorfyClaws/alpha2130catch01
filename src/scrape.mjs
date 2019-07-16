@@ -13,16 +13,17 @@ if(start !== 0) {
 const baseurl = 'https://bulbapedia.bulbagarden.net';
 const alternateNames = {
     Burmy: 'Plant Cloak',
-    Wormadam: 'Plant Cloak',
     Darmanitan: 'Standard Mode',
     Deerling: 'Spring Form',
-    Sawsbuck: 'Spring Form',
     'Flabébé': 'Red Flower',
     Floette: 'Red Flower',
     Florges: 'Red Flower',
-    Xerneas: 'Active Mode',
-    Oricorio: 'Baile Style',
     Lycanroc: 'Midday Form',
+    Mimikyu: 'Disguised Form',
+    Oricorio: 'Baile Style',
+    Sawsbuck: 'Spring Form',
+    Wormadam: 'Plant Cloak',
+    Xerneas: 'Active Mode',
 };
 
 const rq = async (url) => new Promise((resolve, reject) => {
@@ -62,14 +63,15 @@ const downloadAndWritePokemon = async (number, name, url) => {
 
 const scrapePokemonImage = async (number, url) => {
     const $ = await rq(baseurl + url);
-    const name = $('table.roundy td big big b').text();
+    const tableSelector = `table.roundy[style^='float:right; text-align:center; width:33%;']`;
+    const name = $(`${tableSelector} td big big b`).text();
     const alolanName = "Alolan " + name;
 
-    let srcSet = $(`table.roundy a[title='${name}'] img`).attr('srcset');
-    const alolanSrcSet = $(`table.roundy a[title='${alolanName}'] img`).attr('srcset');
+    let srcSet = $(`${tableSelector} a[title='${name}'] img`).attr('srcset');
+    const alolanSrcSet = $(`${tableSelector} a[title='${alolanName}'] img`).attr('srcset');
 
     if(!srcSet && alternateNames[name]) {
-        srcSet = $(`table.roundy a[title='${alternateNames[name]}'] img`).attr('srcset');
+        srcSet = $(`${tableSelector} a[title='${alternateNames[name]}'] img`).attr('srcset');
     }
 
     if(!srcSet) {
