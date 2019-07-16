@@ -8,6 +8,7 @@
     "scrape": "node --experimental-modules src/scrape.mjs",
     "prep-data": "node --experimental-modules src/prep-data.mjs",
     "train": "node --experimental-modules src/training.mjs",
+    "retrain": "npm run prep-data && npm run train && npm run test",
     "test": "node --experimental-modules src/test.mjs"
   },
   "repository": {
