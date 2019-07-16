@@ -11,20 +11,6 @@ if(start !== 0) {
 }
 
 const baseurl = 'https://bulbapedia.bulbagarden.net';
-const alternateNames = {
-    Burmy: 'Plant Cloak',
-    Darmanitan: 'Standard Mode',
-    Deerling: 'Spring Form',
-    'Flabébé': 'Red Flower',
-    Floette: 'Red Flower',
-    Florges: 'Red Flower',
-    Lycanroc: 'Midday Form',
-    Mimikyu: 'Disguised Form',
-    Oricorio: 'Baile Style',
-    Sawsbuck: 'Spring Form',
-    Wormadam: 'Plant Cloak',
-    Xerneas: 'Active Mode',
-};
 
 const rq = async (url) => new Promise((resolve, reject) => {
     request(url, (error, response, html) => {
@@ -48,13 +34,13 @@ const getImageFromSrcSet = (srcSet) => {
     return images[images.length - 1];
 };
 
-const downloadAndWritePokemon = async (number, name, url) => {
+const downloadAndWritePokemon = async (number, name, url, index = null) => {
     const body = await rq({url: `https:${url}`, encoding: null});
 
     const imageParts = url.split('.');
     const extension = imageParts[imageParts.length - 1];
     const dir = path.join(bulbapediaImageDir, name);
-    const file = path.join(dir, `bulbapedia.${extension}`);
+    const file = path.join(dir, `bulbapedia${index == null ? '' : `_${index}`}.${extension}`);
     await fs.ensureDir(dir);
     await fs.outputFile(file, body);
 
@@ -67,20 +53,31 @@ const scrapePokemonImage = async (number, url) => {
     const name = $(`${tableSelector} td big big b`).text();
     const alolanName = "Alolan " + name;
 
-    let srcSet = $(`${tableSelector} a[title='${name}'] img`).attr('srcset');
-    const alolanSrcSet = $(`${tableSelector} a[title='${alolanName}'] img`).attr('srcset');
-
-    if(!srcSet && alternateNames[name]) {
-        srcSet = $(`${tableSelector} a[title='${alternateNames[name]}'] img`).attr('srcset');
-    }
-
-    if(!srcSet) {
-        throw new Error(`Unable to get image for pokemon: ${name}`);
-    }
-
-    await downloadAndWritePokemon(number, name, getImageFromSrcSet(srcSet));
+    const alolanSrcSet = $(`${tableSelector} a[title^='Alolan '] img`).attr('srcset');
     if(alolanSrcSet) {
         await downloadAndWritePokemon(number, alolanName, getImageFromSrcSet(alolanSrcSet));
+    }
+
+    let defaultSrcSet = $(`${tableSelector} a[title='${name}'] img`).attr('srcset');
+
+    if(defaultSrcSet) {
+        await downloadAndWritePokemon(number, name, getImageFromSrcSet(defaultSrcSet));
+    } else {
+        if(alolanSrcSet) {
+            throw new Error(`Unable to get image for pokemon: ${name}`);
+        } else {
+            // No default or alolan srcset, grab all images
+            const srcSets = $(`${tableSelector} a[title] img`).map((_, e) => $(e).attr('srcset')).get();
+
+            if(!srcSets || srcSets.length <= 0) {
+                throw new Error(`Unable to get image for pokemon: ${name}`);
+            }
+
+            let index = 1;
+            for(let srcSet of srcSets) {
+                await downloadAndWritePokemon(number, name, getImageFromSrcSet(srcSet), index++);
+            }
+        }
     }
 };
 
