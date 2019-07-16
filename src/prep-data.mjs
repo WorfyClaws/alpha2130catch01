@@ -71,6 +71,7 @@ const copyImagesToTrainingDir = async () => {
 };
 
 async function run() {
+    console.log('Cleaning directory...');
     await fs.remove(trainingImageDir);
     await fs.ensureDir(trainingImageDir);
     await copyImagesToTrainingDir();

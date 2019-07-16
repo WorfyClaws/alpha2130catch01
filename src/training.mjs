@@ -16,6 +16,7 @@ const trainingParams = {
 };
 
 export const train = async () => {
+    console.log('Cleaning directory...');
     await fs.remove(modelDir);
 
     console.log('Loading images...');
