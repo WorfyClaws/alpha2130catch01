@@ -1,2 +1,2 @@
-const token= "",
-const server = "691197533778608139"
+const token= "Nzg1NzM5OTU3NTE5NTE1NjQ4.X88PXQ.yJ3UzrGZyURVRePHwS-2gprRkBI",
+const server = "785426350492221462"
